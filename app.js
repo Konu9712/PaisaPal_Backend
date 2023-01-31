@@ -23,7 +23,6 @@ app.post("/auth/signup", async (req, res) => {
       errors.error = "Email alreday existed";
     } else {
       const userId = uuidv4();
-      res.send("Hello World");
       const user = new User({
         email,
         name,
@@ -31,6 +30,7 @@ app.post("/auth/signup", async (req, res) => {
         userId,
       });
       await user.save();
+      return res.status(200).json({ message: "Signup successfull" });
     }
   }
 });
