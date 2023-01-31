@@ -20,7 +20,7 @@ app.post("/auth/signup", async (req, res) => {
   } else {
     const emailExist = await User.findOne({ email: email });
     if (emailExist) {
-      errors.error = "Phone Nmber alreday existed";
+      errors.error = "Email alreday existed";
     } else {
       const userId = uuidv4();
       res.send("Hello World");
