@@ -1,2 +1,2 @@
 # PaisaPal_Backend
-Backend for a cast managment system 
+Backend for a cost managment system 
