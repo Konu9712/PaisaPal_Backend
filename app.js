@@ -1,5 +1,6 @@
 const express = require("express");
 const { v4: uuidv4 } = require("uuid");
+const cors = require("cors");
 const User = require("./database/Sechma/userSechma.js");
 const app = express();
 const { isEmpty } = require("./function.js");
@@ -9,6 +10,7 @@ const port = process.env.PORT || 8000;
 require("./database/connecion.js");
 
 //MiddelWare
+app.use(cors());
 app.use(express.json());
 
 //Router
@@ -20,7 +22,7 @@ app.post("/auth/signup", async (req, res) => {
   } else {
     const emailExist = await User.findOne({ email: email });
     if (emailExist) {
-      errors.error = "Email alreday existed";
+      return res.status(400).json({ error: "Email already exist" });
     } else {
       const userId = uuidv4();
       const user = new User({
