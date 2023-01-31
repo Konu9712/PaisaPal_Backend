@@ -37,6 +37,25 @@ app.post("/auth/signup", async (req, res) => {
   }
 });
 
+//------------------Login------------------
+app.post("/auth/login", async (req, res) => {
+  const { email, password } = req.body;
+  if (isEmpty(email) || isEmpty(password)) {
+    return res.status(400).json({ error: "Please fill all the fields" });
+  } else {
+    const userExist = await User.findOne({ email: email });
+    if (userExist) {
+      if (userExist.password == password) {
+        return res.status(200).json({ message: "Login successfull" });
+      } else {
+        return res.status(400).json({ error: "Invalid Credentials" });
+      }
+    } else {
+      return res.status(400).json({ error: "Invalid Credentials" });
+    }
+  }
+});
+
 //Listener
 app.listen(port, () => {
   console.log("Server is running on port: ", port);
