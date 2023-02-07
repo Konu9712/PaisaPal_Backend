@@ -4,6 +4,7 @@ const cors = require("cors");
 const User = require("./database/Sechma/userSechma.js");
 const app = express();
 const { isEmpty } = require("./function.js");
+var jwt = require("jsonwebtoken")
 
 const port = process.env.PORT || 8000;
 //Database Connection
@@ -46,14 +47,25 @@ app.post("/auth/login", async (req, res) => {
     const userExist = await User.findOne({ email: email });
     if (userExist) {
       if (userExist.password == password) {
-        return res.status(200).json({ message: "Login successfull" });
+        const token = jwt.sign(
+          {
+            data: "PaisPal",
+          },
+          "secret",
+          { expiresIn: "1h" }
+        );
+        userExist.token = token;
+        await userExist.save();
+        return res
+          .status(200)
+          .json({ message: "Login successfull", token: token });
       } else {
         return res.status(400).json({ error: "Invalid Credentials" });
       }
     } else {
       return res.status(400).json({ error: "Invalid Credentials" });
-    }
-  }
+    }
+  }
 });
 
 //Listener
