@@ -17,6 +17,9 @@ const userSechma = new mongoose.Schema({
     type: String,
     required: true,
   },
+  token: {
+    type: String,
+  },
 });
 
 const User = mongoose.model("User", userSechma);
