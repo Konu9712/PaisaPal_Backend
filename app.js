@@ -4,7 +4,8 @@ const cors = require("cors");
 const User = require("./database/Sechma/userSechma.js");
 const app = express();
 const { isEmpty } = require("./function.js");
-var jwt = require("jsonwebtoken")
+var jwt = require("jsonwebtoken");
+const Group = require("./database/Sechma/groupSechma");
 
 const port = process.env.PORT || 8000;
 //Database Connection
@@ -56,16 +57,41 @@ app.post("/auth/login", async (req, res) => {
         );
         userExist.token = token;
         await userExist.save();
-        return res
-          .status(200)
-          .json({ message: "Login successfull", token: token });
+        return res.status(200).json({
+          message: "Login successfull",
+          token: token,
+          userId: userExist.userId,
+        });
       } else {
         return res.status(400).json({ error: "Invalid Credentials" });
       }
     } else {
       return res.status(400).json({ error: "Invalid Credentials" });
-    }
-  }
+    }
+  }
+});
+//----------------Create Group----------------
+app.post("/group/create/:id", async (req, res) => {
+  const { groupName, groupArray } = req.body;
+
+  if (!isEmpty(groupName) && groupArray.length > 0) {
+    const userExist = await User.findOne({ userId: req.params.id });
+    if (userExist) {
+      const finalArray = groupArray.push(userExist.email);
+      const group = new Group({
+        groupId: uuidv4(),
+        groupName: groupName,
+        groupMembers: finalArray,
+      });
+
+      await group.save();
+    } else {
+      return res.status(400).json({ error: "User not found" });
+    }
+  } else {
+    return res.status(400).json({ error: "Please add atleast 2 members" });
+  }
+  return res.status(200).json({ message: "Group created successfull" });
 });
 
 //Listener
