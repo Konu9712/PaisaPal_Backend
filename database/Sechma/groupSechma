@@ -1,0 +1,17 @@
+const mongoose = require("mongoose");
+
+const groupSechma = new mongoose.Schema({
+  groupId: {
+    type: String,
+    required: true,
+  },
+  groupName: {
+    type: String,
+  },
+  groupMembers: {
+    type: Array,
+  },
+});
+
+const Group = mongoose.model("Group", groupSechma);
+module.exports = Group;
