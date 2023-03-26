@@ -98,3 +98,10 @@ app.post("/group/create/:id", async (req, res) => {
 app.listen(port, () => {
   console.log("Server is running on port: ", port);
 });
+
+//Get All Users API
+app.get("/getUsers",async(req, res)=>{
+  User.find({},{name : 1, email:1}).then(function (users) {
+    res.send(200,users);
+    });
+});
