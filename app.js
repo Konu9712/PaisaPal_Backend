@@ -101,7 +101,19 @@ app.listen(port, () => {
 
 //Get All Users API
 app.get("/getUsers",async(req, res)=>{
-  User.find({},{name : 1, email:1}).then(function (users) {
-    res.send(200,users);
-    });
+  const token1 = req.headers['authorization']
+  console.log(token1);
+  if(isEmpty(token1)){
+    return res.status(400).json({ error: "Token is not provided" });
+  }else{
+    const userExist = await User.findOne({ token: token1 });
+    if(userExist){
+      User.find({},{name : 1, email:1}).then(function (users) {
+        res.send(200,users);
+        });
+    }else{
+      return res.status(400).json({ error: "Unauthorized access" });
+    }
+  }
+  
 });
