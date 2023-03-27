@@ -77,11 +77,12 @@ app.post("/group/create/:id", async (req, res) => {
   if (!isEmpty(groupName) && groupArray.length > 0) {
     const userExist = await User.findOne({ userId: req.params.id });
     if (userExist) {
-      const finalArray = groupArray.push(userExist.email);
+      console.log(userExist.email);
+      groupArray.push(userExist.email);
       const group = new Group({
         groupId: uuidv4(),
         groupName: groupName,
-        groupMembers: finalArray,
+        groupMembers: groupArray,
       });
 
       await group.save();
