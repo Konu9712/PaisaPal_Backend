@@ -17,6 +17,9 @@ const userSechma = new mongoose.Schema({
     type: String,
     required: true,
   },
+  group: {
+    type: Array,
+  },
   token: {
     type: String,
   },
