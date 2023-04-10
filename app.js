@@ -145,6 +145,26 @@ app.get("/getgroups", async (req, res) => {
   }
 });
 
+
+app.delete("/group/delete/:id", async (req, res) => {
+  const token1 = req.headers["authorization"];
+  const user = jwt.decode(token1);
+  if (isEmpty(token1)) {
+    return res.status(400).json({ error: "Token is not provided" });
+  } else {
+    const group = await Group.findOne({ groupId: req.params.id });
+    if (group) {
+      const userINGroup = group.groupMembers.includes(user.email);
+      if (userINGroup) {
+        await Group.deleteOne({ groupId: req.params.id });
+        return res.status(200).json({ message: "Group deleted successfull" });
+      }
+    } else {
+      return res.status(400).json({ error: "Group not found" });
+    }
+  }
+});
+
 //Listener
 app.listen(port, () => {
   console.log("Server is running on port: ", port);
