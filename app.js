@@ -145,6 +145,64 @@ app.get("/getgroups", async (req, res) => {
   }
 });
 
+//----------------Create Catagory----------------
+app.post("/createCatagory/:groupId", async (req, res) => {
+  const token1 = req.headers["authorization"];
+  const user = jwt.decode(token1);
+  if (isEmpty(token1)) {
+    return res.status(400).json({ error: "Token is not provided" });
+  } else {
+    const userExist = await User.findOne({ userId: user.userId });
+    if (userExist) {
+      const catagory = req.body.catagory;
+      const groupExist = await Group.findOne({ groupId: req.params.groupId });
+      if (groupExist) {
+        if (groupExist.catagory.length > 0) {
+          return res.status(400).json({ error: "Catagory already exist" });
+        } else {
+          const result = await Group.findOneAndUpdate(
+            { groupId: req.params.groupId },
+            { $push: { catagory: { $each: req.body.catagory } } },
+            { new: true }
+          );
+          console.log("result ", result);
+        }
+      } else {
+        return res.status(400).json({ error: "Group not found" });
+      }
+      return res.status(200).json({ message: "Catagory created successfull" });
+    } else {
+      return res.status(400).json({ error: "Unauthorized access" });
+    }
+  }
+});
+
+//----------------Get Catagory----------------
+app.get("/getCatagory/:groupId", async (req, res) => {
+  const token1 = req.headers["authorization"];
+  const user = jwt.decode(token1);
+  if (isEmpty(token1)) {
+    return res.status(400).json({ error: "Token is not provided" });
+  } else {
+    const userExist = await User.findOne({ userId: user.userId });
+    if (userExist) {
+      const groupExist = await Group.findOne({ groupId: req.params.groupId });
+      if (groupExist) {
+        const catagory = groupExist.catagory;
+        if (catagory.length > 0) {
+          res.status(200).json({ catagory: groupExist.catagory });
+        } else {
+          return res.status(400).json({ error: "Catagory not found" });
+        }
+      } else {
+        return res.status(400).json({ error: "Group not found" });
+      }
+    }
+  }
+});
+
+//
+
 //Listener
 app.listen(port, () => {
   console.log("Server is running on port: ", port);
