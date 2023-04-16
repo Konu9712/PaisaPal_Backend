@@ -201,7 +201,56 @@ app.get("/getCatagory/:groupId", async (req, res) => {
   }
 });
 
-//
+// -----------------Create Expense----------------
+app.post("/createExpense/:groupId", async (req, res) => {
+  const token1 = req.headers["authorization"];
+  const user = jwt.decode(token1);
+  if (isEmpty(token1)) {
+    return res.status(400).json({ error: "Token is not provided" });
+  } else {
+    const userExist = await User.findOne({ userId: user.userId });
+    if (userExist) {
+      console.log(userExist?.group);
+      const groupExist = userExist?.group?.find(
+        (id) => id === req.params.groupId
+      );
+      if (groupExist) {
+        const { expenseName, expenseAmount, expenseCatagory, dividedPeople } =
+          req.body;
+        if (expenseName && expenseAmount && expenseCatagory) {
+          const expense = {
+            expenseId: uuidv4(),
+            expenseName: expenseName,
+            expenseAmount: expenseAmount,
+            expenseCatagory: expenseCatagory,
+            expenseBy: userExist.email,
+            expenseDate: Date.now(),
+            dividedPeople: dividedPeople,
+          };
+          const result = await Group.findOneAndUpdate(
+            { groupId: req.params.groupId },
+            { $push: { expense: expense } },
+            { new: true }
+          );
+          if (result) {
+            return res.status(200).json({
+              message: "Expense created successfull",
+              expemse: result.expense,
+            });
+          } else {
+            return res.status(400).json({ error: "Expense not created" });
+          }
+        } else {
+          return res.status(400).json({ error: "Please fill all fields" });
+        }
+      } else {
+        return res.status(400).json({ error: "Wrong Group ID" });
+      }
+    } else {
+      return res.status(400).json({ error: "Unauthorized access" });
+    }
+  }
+});
 
 //Listener
 app.listen(port, () => {
