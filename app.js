@@ -1,6 +1,7 @@
 const express = require("express");
 const { v4: uuidv4 } = require("uuid");
 const cors = require("cors");
+const moment = require("moment");
 const User = require("./database/Sechma/userSechma.js");
 const app = express();
 const { isEmpty } = require("./function.js");
@@ -208,7 +209,7 @@ app.post("/createExpense/:groupId", async (req, res) => {
   if (isEmpty(token1)) {
     return res.status(400).json({ error: "Token is not provided" });
   } else {
-    const userExist = await User.findOne({ userId: user.userId });
+    const userExist = await User.findOne({ userId: user?.userId });
     if (userExist) {
       console.log(userExist?.group);
       const groupExist = userExist?.group?.find(
@@ -224,7 +225,9 @@ app.post("/createExpense/:groupId", async (req, res) => {
             expenseAmount: expenseAmount,
             expenseCatagory: expenseCatagory,
             expenseBy: userExist.email,
-            expenseDate: Date.now(),
+            expenseDate: require("moment")(Date.now()).format(
+              "DD MMM YYYY hh:mm a"
+            ),
             dividedPeople: dividedPeople,
           };
           const result = await Group.findOneAndUpdate(
@@ -252,6 +255,31 @@ app.post("/createExpense/:groupId", async (req, res) => {
   }
 });
 
+//----------------Get Expense----------------
+
+app.get("/getExpense/:groupId", async (req, res) => {
+  const token1 = req.headers["authorization"];
+  const user = jwt.decode(token1);
+  if (isEmpty(token1)) {
+    return res.status(400).json({ error: "Token is not provided" });
+  } else {
+    const userExist = await User.findOne({ userId: user.userId });
+    if (userExist) {
+      const groupExist = await Group.findOne({ groupId: req.params.groupId });
+      if (groupExist) {
+        const expense = groupExist.expense;
+        console.log("expense ", groupExist);
+        if (expense.length > 0) {
+          return res.status(200).json({ expense: groupExist.expense });
+        } else {
+          return res.status(400).json({ error: "Expense not found" });
+        }
+      } else {
+        return res.status(400).json({ error: "Group not found" });
+      }
+    }
+  }
+});
 //Listener
 app.listen(port, () => {
   console.log("Server is running on port: ", port);
