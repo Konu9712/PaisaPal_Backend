@@ -14,6 +14,9 @@ const groupSechma = new mongoose.Schema({
   catagory: {
     type: Array,
   },
+  expense: {
+    type: Array,
+  },
 });
 
 const Group = mongoose.model("Group", groupSechma);
