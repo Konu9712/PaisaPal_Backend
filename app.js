@@ -1,6 +1,7 @@
 const express = require("express");
 const { v4: uuidv4 } = require("uuid");
 const cors = require("cors");
+const bcrypt = require("bcrypt");
 const moment = require("moment");
 const User = require("./database/Sechma/userSechma.js");
 const app = express();
@@ -27,10 +28,11 @@ app.post("/auth/signup", async (req, res) => {
       return res.status(400).json({ error: "Email already exist" });
     } else {
       const userId = uuidv4();
+      const encryptedPassword = await bcrypt.hash(password, 12);
       const user = new User({
         email,
         name,
-        password,
+        password: encryptedPassword,
         userId,
       });
       await user.save();
@@ -47,7 +49,11 @@ app.post("/auth/login", async (req, res) => {
   } else {
     const userExist = await User.findOne({ email: email });
     if (userExist) {
-      if (userExist.password == password) {
+      const passswordConfirm = await bcrypt.compare(
+        password,
+        userExist.password
+      );
+      if (passswordConfirm) {
         const token = jwt.sign(
           {
             userId: userExist.userId,
