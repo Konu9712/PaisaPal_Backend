@@ -280,6 +280,48 @@ app.get("/getExpense/:groupId", async (req, res) => {
     }
   }
 });
+//----------------Delete Expense----------------
+app.delete("/deleteExpense/:groupId/:expenseId", async (req, res) => {
+  const token1 = req.headers["authorization"];
+  const user = jwt.decode(token1);
+  if (isEmpty(token1)) {
+    return res.status(400).json({ error: "Token is not provided" });
+  } else {
+    const userExist = await User.findOne({ userId: user.userId });
+    if (userExist) {
+      const groupExist = await Group.findOne({ groupId: req.params.groupId });
+      if (groupExist) {
+        const expense = groupExist.expense;
+        if (expense.length > 0) {
+          const expenseExist = await Group.findOne({
+            groupId: req.params.groupId,
+            "expense.expenseId": req.params.expenseId,
+          });
+          if (expenseExist) {
+            const result = await Group.findOneAndUpdate(
+              { groupId: req.params.groupId },
+              { $pull: { expense: { expenseId: req.params.expenseId } } },
+              { new: true }
+            );
+            if (result) {
+              return res
+                .status(200)
+                .json({ message: "Expense deleted successfully" });
+            } else {
+              return res.status(400).json({ error: "Expense not deleted" });
+            }
+          } else {
+            return res.status(400).json({ error: "Expense not found" });
+          }
+        } else {
+          return res.status(400).json({ error: "Expense not found" });
+        }
+      } else {
+        return res.status(400).json({ error: "Group not found" });
+      }
+    }
+  }
+});
 //Listener
 app.listen(port, () => {
   console.log("Server is running on port: ", port);
