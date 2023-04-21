@@ -194,7 +194,7 @@ app.post("/createCatagory/:groupId", async (req, res) => {
       const catagory = req.body.catagory;
       const groupExist = await Group.findOne({ groupId: req.params.groupId });
       if (groupExist) {
-        if (groupExist.catagory.length > 0) {
+        if (groupExist.catagory.length > 0 && groupExist.catagory.includes(catagory)) {
           return res.status(400).json({ error: "Catagory already exist" });
         } else {
           const result = await Group.findOneAndUpdate(
