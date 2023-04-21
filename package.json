@@ -11,7 +11,6 @@
     "uuid": "^9.0.0"
   },
   "scripts": {
-    "start": "node app.js",
-    "test" : "testing"
+    "start": "node app.js"
   }
 }
