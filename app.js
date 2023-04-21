@@ -166,7 +166,6 @@ app.post("/createCatagory/:groupId", async (req, res) => {
             { $push: { catagory: { $each: req.body.catagory } } },
             { new: true }
           );
-          console.log("result ", result);
         }
       } else {
         return res.status(400).json({ error: "Group not found" });
@@ -211,7 +210,6 @@ app.post("/createExpense/:groupId", async (req, res) => {
   } else {
     const userExist = await User.findOne({ userId: user?.userId });
     if (userExist) {
-      console.log(userExist?.group);
       const groupExist = userExist?.group?.find(
         (id) => id === req.params.groupId
       );
@@ -268,7 +266,6 @@ app.get("/getExpense/:groupId", async (req, res) => {
       const groupExist = await Group.findOne({ groupId: req.params.groupId });
       if (groupExist) {
         const expense = groupExist.expense;
-        console.log("expense ", groupExist);
         if (expense.length > 0) {
           return res.status(200).json({ expense: groupExist.expense });
         } else {
@@ -322,6 +319,66 @@ app.delete("/deleteExpense/:groupId/:expenseId", async (req, res) => {
     }
   }
 });
+
+//----------------Updat[e Expense----------------
+app.put("/updateExpense/:groupId/:expenseId", async (req, res) => {
+  const token1 = req.headers["authorization"];
+  const user = jwt.decode(token1);
+  if (isEmpty(token1)) {
+    return res.status(400).json({ error: "Token is not provided" });
+  } else {
+    const groupExist = await Group.findOne({ groupId: req.params.groupId });
+    if (groupExist) {
+      const Allexpense = groupExist.expense;
+      if (Allexpense.length > 0) {
+        for (var i = 0; i < Allexpense.length; i++) {
+          if (Allexpense[i].expenseId === req.params.expenseId) {
+            const {
+              expenseName,
+              expenseAmount,
+              expenseCatagory,
+              dividedPeople,
+            } = req.body;
+            if (expenseName && expenseAmount && expenseCatagory) {
+              const expense = {
+                expenseId: req.params.expenseId,
+                expenseName: expenseName,
+                expenseAmount: expenseAmount,
+                expenseCatagory: expenseCatagory,
+                expenseBy: user.email,
+                expenseDate: require("moment")(Date.now()).format(
+                  "DD MMM YYYY hh:mm a"
+                ),
+                dividedPeople: dividedPeople,
+              };
+              const result = await Group.findOneAndUpdate(
+                { groupId: req.params.groupId },
+                { $set: { "expense.$[i]": expense } },
+                { arrayFilters: [{ "i.expenseId": req.params.expenseId }] }
+              );
+              if (result) {
+                return res.status(200).json({
+                  message: "Expense updated successfull",
+                  expense: result.expense,
+                });
+              } else {
+                return res.status(400).json({ error: "Expense not updated" });
+              }
+            } else {
+              return res.status(400).json({ error: "Please fill all fields" });
+            }
+          }
+        }
+        return res.status(400).json({ error: "Expense not found" });
+      } else {
+        return res.status(400).json({ error: "Expense not found" });
+      }
+    } else {
+      return res.status(400).json({ error: "Group not found" });
+    }
+  }
+});
+
 //Listener
 app.listen(port, () => {
   console.log("Server is running on port: ", port);
