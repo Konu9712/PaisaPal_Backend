@@ -1,4 +1,4 @@
-# Paisapal Backnd
+# Paisapal Backend
 
 This is a Node.js project that allows users to create groups and track expenses with their friends or family. It is a clone of the popular app Tricount.
 
